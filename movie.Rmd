@@ -18,6 +18,62 @@ summary(cars)
 x = 1
 ```
 
+```{r}
+library(magrittr)
+```
+
+```{r}
+movies = read.csv('movies.csv')
+
+View(movies)
+```
+
+```{r}
+
+ratings = read.csv('ratings.csv')
+View(ratings)
+
+```
+
+```{r}
+
+links = read.csv('links.csv')
+View(links)
+
+```
+
+```{r}
+
+tags = read.csv('tags.csv')
+View(tags)
+
+```
+
+```{r}
+
+genome_scores = read.csv('genome-scores.csv')
+View(genome_scores)
+
+```
+
+```{r}
+
+genome_tags = read.csv('genome-tags.csv')
+View(genome_tags)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
 ## Including Plots
 
 You can also embed plots, for example:
