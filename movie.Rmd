@@ -20,59 +20,47 @@ x = 1
 
 ```{r}
 library(magrittr)
+library(plyr)
 ```
+# Variables
+```{r}
+ratings = read.csv('ratings.csv')
+movies = read.csv('movies.csv')
+links = read.csv('links.csv')
+tags = read.csv('tags.csv')
+genome_scores = read.csv('genome-scores.csv')
+genome_tags = read.csv('genome-tags.csv')
+```
+## Top film
 
 ```{r}
-movies = read.csv('movies.csv')
 
 View(movies)
-```
-
-```{r}
-
-ratings = read.csv('ratings.csv')
 View(ratings)
 
-```
+#Meilleure ratings
+# nbview = aggregate(ratings, list(Movie=ratings.movieId), sum)
+movie_views = count(ratings, vars = "movieId")
+top_view = head(movie_views[order(movie_views$freq, decreasing = TRUE),], 100)
+top_view = merge(x = movies, y = top_view, by.x = "movieId", by.y = "movieId")
+View(top_view)
 
-```{r}
+avg_ratings = ddply(ratings, .(movieId), summarize, Avg=mean(rating))
+top_populaire = head(avg_ratings[order(avg_ratings$Avg, decreasing = TRUE),], 100)
+movie_top = merge(x = movies, y = top_populaire, by.x = "movieId", by.y = "movieId")
+View(movie_top)
 
-links = read.csv('links.csv')
-View(links)
+#Merge
+#all_data c'est toutes les données pour les films
+all_data = merge(x =ratings, y = movies, by.x = "movieId", by.y = "movieId")
+all_data = merge(x = all_data, y = links, by.x = "movieId", by.y = "movieId")
+all_data = merge(x = all_data, y = tags, by.x = "movieId", by.y = "movieId")
+all_data = merge(x = all_data, y = genome_scores, by.x = "movieId", by.y = "movieId")
 
-```
 
-```{r}
 
-tags = read.csv('tags.csv')
-View(tags)
-
-```
-
-```{r}
-
-genome_scores = read.csv('genome-scores.csv')
-View(genome_scores)
-
-```
-
-```{r}
-
-genome_tags = read.csv('genome-tags.csv')
-View(genome_tags)
 
 ```
-
-
-
-
-
-
-
-
-
-
-
 
 ## Including Plots
 
