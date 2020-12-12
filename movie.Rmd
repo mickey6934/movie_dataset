@@ -121,6 +121,9 @@ View(top_view_2)
 
 ```{r}
 
+
+#### Drop outliers 
+
 drop_outliers = function() {
   for(i in )
 }
@@ -129,6 +132,51 @@ drop_outliers()
 
 
 ```
+
+
+```{r}
+
+#1. Analyse de variables une par une 
+
+## outliers 
+
+##Liste de films 
+##
+## distribution des avis par film 
+##boxplot 
+
+
+##boxplot des 5 premiers films les plus vus 
+
+
+##barplot des 5 premiers films les plus vues 
+
+
+#2. Nombre d'avis par année (par différence avec la sortie du film)
+
+
+
+#3. Pour chaque année, les 5 tags les plus populaires (horreur, science, etc)
+#Evolution au cours des années 
+
+#4. Regardez ce qui a été fait ? 
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
 
 
 
