@@ -38,12 +38,103 @@ genome_tags = read.csv('genome-tags.csv')
 View(movies)
 View(ratings)
 
+ratings <- as.data.frame(ratings)
+
+View(ratings$timestamp)
+
+View(as.POSIXct(ratings$timestamp, origin="1970-01-01"))
+
+ratings$timestamp = as.POSIXct(ratings$timestamp, origin="1970-01-01")
+
+?substr
+
+ratings$timestamp = as.integer(substr(ratings$timestamp, 1, 4))
+
+ratings = as.data.frame(ratings)
+```
+
+
+
+
+```{r}
+
 #Meilleure ratings
 # nbview = aggregate(ratings, list(Movie=ratings.movieId), sum)
-movie_views = count(ratings, vars = "movieId")
-top_view = head(movie_views[order(movie_views$freq, decreasing = TRUE),], 100)
-top_view = merge(x = movies, y = top_view, by.x = "movieId", by.y = "movieId")
-View(top_view)
+(movie_views = count(ratings, vars = "movieId"))
+
+
+
+#top_view = head(movie_views[order(movie_views$freq, decreasing = TRUE),], 100)
+top_view = merge(x = movies, y = movie_views, by.x = "movieId", by.y = "movieId")
+
+top_view_1 = as.data.frame(top_view)
+
+?sort
+
+top_view_1 = top_view_1[order(top_view_1$freq, decreasing = TRUE),]
+
+View(top_view_1)
+
+length(top_view_1[top_view_1$freq > 1000,]$freq)/length(top_view_1$freq)
+
+hist(top_view_1[top_view_1$freq > 1000,]$freq)
+
+#boxplot(top_view_1[top_view_1$freq > 1000,]$freq)
+
+top_view_1 = top_view_1[top_view_1$freq > 1000,]
+View(top_view_1)
+
+
+top_view_2 = merge(x = top_view_1, y = ratings, by.x = "movieId", by.y = "movieId")
+
+
+
+boxplot(top_view_2$rating[top_view_2$movieId == 1], col="blue",outline = FALSE)
+
+
+summary(top_view_2$rating[top_view_2$movieId == 1])[2]
+
+top_view_2["summary"]=0
+
+View(top_view_2)
+
+
+
+summary(top_view_2$rating)
+
+top_view_2["summary"]=summary(top_view_2$rating[top_view_2$movieId == ])[2]
+
+
+
+#top_view_2$rating[]
+
+unique(top_view_2$movieId)
+summary()
+#summary(top_view_2$rating)
+
+
+View(top_view_2)
+
+
+
+```
+
+```{r}
+
+drop_outliers = function() {
+  for(i in )
+}
+
+drop_outliers()
+
+
+```
+
+
+
+```{r}
+
+
 
 avg_ratings = ddply(ratings, .(movieId), summarize, Avg=mean(rating))
 top_populaire = head(avg_ratings[order(avg_ratings$Avg, decreasing = TRUE),], 100)
