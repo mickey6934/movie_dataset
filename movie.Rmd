@@ -168,9 +168,44 @@ top_view_4 = top_view_3[rating >= '1Q']
 
 ##boxplot des 5 premiers films les plus vus
 
-five_most_ranked_movies = top_view_1$title[1:5]
+ten_most_ranked_movies = top_view_1$title[1:10]
 
-five_most_ranked_movies[1]
+ten_most_ranked_movies[1:10]
+```
+
+```{r}
+d <- data.frame(word = sub("\\(.*", "", top_view_1$title[1:10]),freq=top_view_1$freq[1:10])
+
+d
+```
+
+```{r}
+library(forcats)
+```
+
+```{r}
+# Barplot basique
+
+d %>%
+mutate(word = fct_reorder(word, freq)) %>%
+ggplot(aes(x=word, y=freq)) +
+  geom_bar(stat="identity") + coord_flip()
+
+```
+
+```{r}
+library(wordcloud)
+```
+
+```{r}
+d <- data.frame(word = sub("\\(.*", "", top_view_1$title[1:100]),freq=top_view_1$freq[1:100])
+
+d
+```
+```{r}
+wordcloud(words = d$word, freq = d$freq, 
+               max.words=100, random.order=FALSE, 
+               colors=brewer.pal(8, "Dark2"), scale=c(.5,.5))
 ```
 
 
@@ -214,12 +249,9 @@ top_view_4$year=format(top_view_4$timestamp, "%Y")
 View(top_view_4[1])
 ```
 
-
-
-
 ```{r}
 ranking_per_year = top_view_4[, list(Ranking_Total_Per_Year = .N), 
-                              by=list(year)][order(year)]
+                              by=list(year)][order(-year)]
 
 View(ranking_per_year)
 ```
@@ -231,14 +263,13 @@ library(ggplot2)
 
 ```{r}
 # Barplot basique
-p = ggplot(data=ranking_per_year, aes(x=year, y=Ranking_Total_Per_Year)) +
-  geom_bar(stat="identity")
-p
+
+ranking_per_year %>%
+  mutate(year = fct_reorder(year, desc(year))) %>%
+ggplot(aes(x=year, y=Ranking_Total_Per_Year)) +
+  geom_bar(stat="identity") + coord_flip()
 ```
-```{r}
-# Barplot horizontal
-p + coord_flip()
-```
+
 ##3. Nombre d'avis par année (par différence avec la sortie du film)
 
 ```{r}
@@ -271,15 +302,89 @@ p = ggplot(data=top_view_release, aes(x=as.numeric, y=Diff_Release_Year)) +
   geom_bar(stat="identity")
 p
 ```
-##4. Tags les plus populaires par annee 
+##5 Repartition par userID: quel user a le plus noté ? 
+
 ```{r}
-#Pour chaque année, les 5 tags les plus populaires (horreur, science, etc)
-#Evolution au cours des années 
+top_users = top_view_4[, list(Ranking_User = .N), 
+                              by=list(userId)][order(-Ranking_User)]
+```
 
-#View(top_view_4)
+```{r}
+View(top_users[1:100])
+```
 
+```{r}
+top_users[1:100] %>%
+  mutate(userId = fct_reorder(factor(userId), desc(Ranking_User))) %>%
+  ggplot(aes(x=userId, y=Ranking_User)) +
+  geom_bar(stat="identity")
+  
+#barplot(top_users[1:100]$Ranking_User ~ top_users[1:100]$userId)
+```
+##4. Tags les plus populaires sur la dataset 
+
+```{r}
 View(genome_tags)
+```
 
+```{r}
+genome_scores = as.data.table(genome_scores)
+```
+
+```{r}
+View(genome_scores)
+```
+
+```{r}
+tags = merge(x = genome_tags, y = genome_scores, by.x = "tagId", by.y = "tagId", all.x = FALSE, all.y = FALSE)
+```
+
+```{r}
+View(tags)
+```
+
+```{r}
+tags = as.data.table(tags)
+```
+
+```{r}
+tags_counter = tags[, list(Count_by_tag = .N), 
+                              by=tagId]
+```
+
+```{r}
+View(tags_counter)
+```
+
+```{r}
+library(wordcloud)
+```
+
+```{r}
+d <- data.frame(word = tags_counter$tag,freq=tags_counter$Count_by_tag)
+
+head(d, 30)
+
+```
+
+```{r}
+View(tags_counter)
+```
+
+```{r}
+wordcloud(words = d$word, freq = d$freq, min.freq = 13815, max.words=200, random.order=FALSE, colors=brewer.pal(8, "Dark2"))
+```
+
+##5. Tags les plus populaires par annee 
+
+```{r}
+#To be continued...
+```
+
+##6. Suite 
+
+```{r}
+#To be continued...
 ```
 
 
@@ -307,6 +412,16 @@ all_data = merge(x = all_data, y = genome_scores, by.x = "movieId", by.y = "movi
 
 
 ```
+
+
+
+
+
+
+
+
+
+
 
 ## Including Plots
 
