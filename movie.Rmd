@@ -450,43 +450,54 @@ View(top_view_4[, list(Count=.N), by=list(title, genres)])
 
 
 #grepl('Animation', top_view_4$genres[1], fixed = TRUE)
+#temp = top_view_4[, list(Count=.N), by=list(genres)]$genres
+#View(temp)
+#class(temp)
+#temp2 = lapply(temp, function(x) str_split(x, pattern='\\|'))
+#all_genres = unique(unlist(temp2))
+#all_genres
 
-temp = top_view_4[, list(Count=.N), by=list(genres)]$genres
-View(temp)
-
-class(temp)
-
-temp2 = lapply(temp, function(x) str_split(x, pattern='\\|'))
-
-all_genres = unique(unlist(temp2))
-
-all_genres
-
-all_movies = top_view_4[, list(Count=.N), by=list(title, genres)]
+all_movies = top_view_4[, list(Count=.N), by=list(title, genres, release_year)]
 
 View(all_movies)
 
-counter_movies = data.frame(Genre="1",
-                 Nombre=1)
+View(all_movies[, list(.N), by=release_year][order(release_year)])
+
+counter_movies = data.frame(Genre="",
+                 Nombre=1, Year=1)
 View(counter_movies)
+
+dim(all_movies)[1]
+
+length(all_genres)
+
+df = data.frame(matrix(0L, ncol = length(all_genres), nrow = length(seq(1920, 2020))))
+
+names(df) = all_genres
+
+#View(df)
+
+#seq(1920,2020)
+
+rownames(df) = seq(1920,2020)
+
+View(df)
+
+df[1920, 'Adventure']
 
 for (i in seq(all_genres)) {
-  #print(all_genres[i])
-  #print(paste(all_genres[i], ':', count(grepl(all_genres[i], all_movies$genres, fixed = TRUE))[2, 2]))
   
-  #print(all_genres[i])
-  df_aux = c(all_genres[i], count(grepl(all_genres[i], all_movies$genres, fixed = TRUE))[2, 2])
-  counter_movies = rbind(counter_movies, df_aux)
+  for(j in seq(dim(all_movies)[1])) {
+    
+    if(grepl(all_genres[i], all_movies[j]$genres, fixed = TRUE) & !is.na(all_movies[j]$release_year) & all_movies[j]$release_year != 500){
+      
+      df[all_movies[j]$release_year, all_genres[i]] = df[all_movies[j]$release_year, all_genres[i]] + 1 
+    }
+  }
 }
 
-View(counter_movies)
+##df -  Genre des films de la base les plus courants par année et par ordre décroissant
 
-counter_movies$Nombre = as.numeric(counter_movies$Nombre)
-
-counter_movies %>%
-  mutate(Genre = fct_reorder(Genre, Nombre)) %>%
-  ggplot(aes(x=Genre, y=Nombre)) +
-  geom_bar(stat="identity") + coord_flip()
 
 ```
 
