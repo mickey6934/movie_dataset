@@ -31,29 +31,35 @@ tags = read.csv('tags.csv')
 genome_scores = read.csv('genome-scores.csv')
 genome_tags = read.csv('genome-tags.csv')
 ```
+
+```{r}
+class(ratings)
+```
+
 ## Top film
 
 ```{r}
 
-View(movies)
-View(ratings)
+#View(movies)
+#View(ratings)
 
-ratings <- as.data.frame(ratings)
+#ratings <- as.data.frame(ratings)
 
-View(ratings$timestamp)
+#View(ratings$timestamp)
 
-View(as.POSIXct(ratings$timestamp, origin="1970-01-01"))
+#View(as.POSIXct(ratings$timestamp, origin="1970-01-01"))
 
-ratings$timestamp = as.POSIXct(ratings$timestamp, origin="1970-01-01")
+#ratings$timestamp = as.POSIXct(ratings$timestamp, origin="1970-01-01")
 
-?substr
+#?substr
 
-ratings$timestamp = as.integer(substr(ratings$timestamp, 1, 4))
+#ratings$timestamp = as.integer(substr(ratings$timestamp, 1, 4))
 
-ratings = as.data.frame(ratings)
+#ratings = as.data.frame(ratings)
+
+#View(ratings)
+
 ```
-
-
 
 
 ```{r}
@@ -62,80 +68,95 @@ ratings = as.data.frame(ratings)
 # nbview = aggregate(ratings, list(Movie=ratings.movieId), sum)
 (movie_views = count(ratings, vars = "movieId"))
 
-
-
+```
+```{r}
 #top_view = head(movie_views[order(movie_views$freq, decreasing = TRUE),], 100)
 top_view = merge(x = movies, y = movie_views, by.x = "movieId", by.y = "movieId")
 
 top_view_1 = as.data.frame(top_view)
 
+```
+
+```{r}
+View(top_view_1)
+```
+
+```{r}
 ?sort
 
 top_view_1 = top_view_1[order(top_view_1$freq, decreasing = TRUE),]
 
 View(top_view_1)
+```
+
+```{r}
+#View(top_view_1)
 
 length(top_view_1[top_view_1$freq > 1000,]$freq)/length(top_view_1$freq)
 
 hist(top_view_1[top_view_1$freq > 1000,]$freq)
-
+```
+```{r}
 #boxplot(top_view_1[top_view_1$freq > 1000,]$freq)
 
 top_view_1 = top_view_1[top_view_1$freq > 1000,]
 View(top_view_1)
+```
 
 
+```{r}
 top_view_2 = merge(x = top_view_1, y = ratings, by.x = "movieId", by.y = "movieId")
 
+View(top_view_2)
+```
 
+##DROP BELOW THE 1Q
 
+```{r}
 boxplot(top_view_2$rating[top_view_2$movieId == 1], col="blue",outline = FALSE)
-
-
+```
+```{r}
 summary(top_view_2$rating[top_view_2$movieId == 1])[2]
+```
+```{r}
+#top_view_2["summary"]=0
+#View(top_view_2)
+```
 
-top_view_2["summary"]=0
 
-View(top_view_2)
-
-
-
+```{r}
 summary(top_view_2$rating)
-
-top_view_2["summary"]=summary(top_view_2$rating[top_view_2$movieId == ])[2]
-
-
-
-#top_view_2$rating[]
-
-unique(top_view_2$movieId)
-summary()
-#summary(top_view_2$rating)
-
-
-View(top_view_2)
-
-
-
+```
+```{r}
+library(data.table)
+```
+```{r}
+top_view_2 = as.data.table(top_view_2)
 ```
 
 ```{r}
-
-
-#### Drop outliers 
-
-drop_outliers = function() {
-  for(i in )
-}
-
-drop_outliers()
-
-
+#View(top_view_2[, list('1Q' = summary(rating)[2]), by=list(movieId)])
 ```
 
+```{r}
+top_view_agg = top_view_2[, list('1Q' = summary(rating)[2]), by=list(movieId)]
+```
 
 ```{r}
+top_view_3 = merge(x = top_view_2, y = top_view_agg, by.x = "movieId", by.y = "movieId")
+```
 
+```{r}
+#View(top_view_3)
+```
+
+```{r}
+top_view_4 = top_view_3[rating >= '1Q']
+```
+
+##1. Distribution des avis pour les 10 films les plus notés
+
+```{r}
 #1. Analyse de variables une par une 
 
 ## outliers 
@@ -145,33 +166,119 @@ drop_outliers()
 ## distribution des avis par film 
 ##boxplot 
 
+##boxplot des 5 premiers films les plus vus
 
-##boxplot des 5 premiers films les plus vus 
+five_most_ranked_movies = top_view_1$title[1:5]
 
-
-##barplot des 5 premiers films les plus vues 
-
-
-#2. Nombre d'avis par année (par différence avec la sortie du film)
+five_most_ranked_movies[1]
+```
 
 
+```{r}
+for(i in seq(1, 1)) {
+  boxplot(top_view_4$rating[top_view_4$title == five_most_ranked_movies[i]], col="blue",outline = FALSE)
+}
 
-#3. Pour chaque année, les 5 tags les plus populaires (horreur, science, etc)
+
+for(i in seq(1, 5)) {
+  hist(top_view_4$rating[top_view_4$title == five_most_ranked_movies[i]], col="blue")
+}
+
+#boxplot(top_view_4$rating[top_view_4$title == five_most_ranked_movies[1]], col="blue",outline = FALSE)
+
+```
+
+##2. Nombre d'avis par année
+
+
+```{r}
+#rm(list=c('top_view_2', 'top_view_3'))
+```
+
+```{r}
+
+top_view_4$timestamp <-  as.POSIXct(top_view_4$timestamp, origin="1970-01-01")
+
+```
+
+```{r}
+#class(top_view_4)
+#View(format(top_view_4$timestamp, "%Y"))
+
+#format(top_view_4$timestamp[1:4], "%Y")
+
+top_view_4$year=format(top_view_4$timestamp, "%Y")
+```
+
+```{r}
+View(top_view_4[1])
+```
+
+
+
+
+```{r}
+ranking_per_year = top_view_4[, list(Ranking_Total_Per_Year = .N), 
+                              by=list(year)][order(year)]
+
+View(ranking_per_year)
+```
+
+```{r}
+library(ggplot2)
+```
+
+
+```{r}
+# Barplot basique
+p = ggplot(data=ranking_per_year, aes(x=year, y=Ranking_Total_Per_Year)) +
+  geom_bar(stat="identity")
+p
+```
+```{r}
+# Barplot horizontal
+p + coord_flip()
+```
+##3. Nombre d'avis par année (par différence avec la sortie du film)
+
+```{r}
+library(stringr)
+```
+
+```{r}
+#str_split(movies$title[1], pattern='(')
+top_view_4$release_year = str_extract(top_view_4$title, '(?<=\\()[0-9-]+(?=\\))')
+```
+
+```{r}
+
+top_view_release = top_view_4[, list(Diff_Release_Year = .N), 
+                              by=list(as.numeric(format(timestamp, "%Y")) - as.numeric(str_extract(title, '(?<=\\()[0-9-]+(?=\\))')))]
+
+```
+
+```{r}
+top_view_release = top_view_release[order(as.numeric)][5:104]
+```
+
+```{r}
+View(top_view_release)
+```
+
+```{r}
+# Barplot basique
+p = ggplot(data=top_view_release, aes(x=as.numeric, y=Diff_Release_Year)) +
+  geom_bar(stat="identity")
+p
+```
+##4. Tags les plus populaires par annee 
+```{r}
+#Pour chaque année, les 5 tags les plus populaires (horreur, science, etc)
 #Evolution au cours des années 
 
-#4. Regardez ce qui a été fait ? 
+#View(top_view_4)
 
-
-
-
-
-
-
-
-
-
-
-
+View(genome_tags)
 
 ```
 
