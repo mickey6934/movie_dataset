@@ -381,12 +381,114 @@ wordcloud(words = d$word, freq = d$freq, min.freq = 13815, max.words=200, random
 #To be continued...
 ```
 
-##6. Suite 
+##6. Genre des films de la base par ordre décroissant
 
 ```{r}
 #To be continued...
-```
 
+View(top_view_4)
+
+View(top_view_4[, list(Count=.N), by=list(title, genres)])
+
+#top_view_4$genres[1]
+
+#(str_extract_all(top_view_4$genres[1], "Animation"))
+
+
+#grepl('Animation', top_view_4$genres[1], fixed = TRUE)
+
+temp = top_view_4[, list(Count=.N), by=list(genres)]$genres
+View(temp)
+
+class(temp)
+
+temp2 = lapply(temp, function(x) str_split(x, pattern='\\|'))
+
+all_genres = unique(unlist(temp2))
+
+all_genres
+
+all_movies = top_view_4[, list(Count=.N), by=list(title, genres)]
+
+View(all_movies)
+
+counter_movies = data.frame(Genre="1",
+                 Nombre=1)
+View(counter_movies)
+
+for (i in seq(all_genres)) {
+  #print(all_genres[i])
+  #print(paste(all_genres[i], ':', count(grepl(all_genres[i], all_movies$genres, fixed = TRUE))[2, 2]))
+  
+  #print(all_genres[i])
+  df_aux = c(all_genres[i], count(grepl(all_genres[i], all_movies$genres, fixed = TRUE))[2, 2])
+  counter_movies = rbind(counter_movies, df_aux)
+}
+
+View(counter_movies)
+
+counter_movies$Nombre = as.numeric(counter_movies$Nombre)
+
+counter_movies %>%
+  mutate(Genre = fct_reorder(Genre, Nombre)) %>%
+  ggplot(aes(x=Genre, y=Nombre)) +
+  geom_bar(stat="identity") + coord_flip()
+
+```
+##7. Genre des films de la base les plus courants par année et par ordre décroissant
+
+```{r}
+#To be continued...
+
+View(top_view_4)
+
+View(top_view_4[, list(Count=.N), by=list(title, genres)])
+
+#top_view_4$genres[1]
+
+#(str_extract_all(top_view_4$genres[1], "Animation"))
+
+
+#grepl('Animation', top_view_4$genres[1], fixed = TRUE)
+
+temp = top_view_4[, list(Count=.N), by=list(genres)]$genres
+View(temp)
+
+class(temp)
+
+temp2 = lapply(temp, function(x) str_split(x, pattern='\\|'))
+
+all_genres = unique(unlist(temp2))
+
+all_genres
+
+all_movies = top_view_4[, list(Count=.N), by=list(title, genres)]
+
+View(all_movies)
+
+counter_movies = data.frame(Genre="1",
+                 Nombre=1)
+View(counter_movies)
+
+for (i in seq(all_genres)) {
+  #print(all_genres[i])
+  #print(paste(all_genres[i], ':', count(grepl(all_genres[i], all_movies$genres, fixed = TRUE))[2, 2]))
+  
+  #print(all_genres[i])
+  df_aux = c(all_genres[i], count(grepl(all_genres[i], all_movies$genres, fixed = TRUE))[2, 2])
+  counter_movies = rbind(counter_movies, df_aux)
+}
+
+View(counter_movies)
+
+counter_movies$Nombre = as.numeric(counter_movies$Nombre)
+
+counter_movies %>%
+  mutate(Genre = fct_reorder(Genre, Nombre)) %>%
+  ggplot(aes(x=Genre, y=Nombre)) +
+  geom_bar(stat="identity") + coord_flip()
+
+```
 
 
 
