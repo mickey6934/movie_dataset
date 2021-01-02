@@ -430,12 +430,25 @@ for (i in seq(all_genres)) {
 
 #View(counter_movies)
 
+counter_movies = counter_movies[-1,]
+
+
+
 counter_movies$Nombre = as.numeric(counter_movies$Nombre)
 
 counter_movies %>%
   mutate(Genre = fct_reorder(Genre, Nombre)) %>%
   ggplot(aes(x=Genre, y=Nombre)) +
   geom_bar(stat="identity") + coord_flip()
+
+```
+
+```{r}
+View(counter_movies)
+
+wordcloud(words = counter_movies$Genre, freq = counter_movies$Nombre, 
+               max.words=10, random.order=FALSE, 
+               colors=brewer.pal(8, "Dark2"), scale=c(3,3))
 
 ```
 ##7. Genre des films de la base les plus courants par année et par ordre décroissant
