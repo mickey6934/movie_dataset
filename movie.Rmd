@@ -626,6 +626,28 @@ wordcloud_per_year = function(wanted_year) {
 wordcloud_per_year('2000')
 
 ```
+```{r}
+
+#TO BE DONE.....
+
+
+#RATING BASED ON YEAR
+
+#https://www.kaggle.com/ajithpanner/simple-imdb-data-analysis
+```
+
+```{r}
+
+#TO BE DONE.....
+
+
+#CONNECTED GENRE 
+
+#https://www.kaggle.com/diegoinacio/imdb-genre-based-analysis
+
+```
+
+
 
 
 
