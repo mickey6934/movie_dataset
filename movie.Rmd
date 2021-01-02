@@ -565,6 +565,69 @@ ggplot(df_plot, aes(x= rownames(df_plot), y= combien, colour=genre_le_plus_coura
   geom_point() +geom_text(aes(label=genre_le_plus_courant_par_annee),hjust=0, vjust=0)
 
 ```
+```{r}
+View(df)
+
+df['Adventure']
+
+genre_per_year = function(genre) {
+  
+  df[genre] %>%
+  ggplot(aes(x=rownames(df), y=get(genre))) +
+  geom_bar(stat="identity") + coord_flip()
+}
+
+genre_per_year('Adventure')
+genre_per_year('Drama')
+```
+Worcloud des genres par annee 
+
+```{r}
+
+#View(t(df))
+
+df_year_genre = t(df)
+
+df_year_genre = as.data.frame(df_year_genre)
+
+#View(df_year_genre)
+
+row.names(df_year_genre)
+
+class(df_year_genre['1920'])
+
+row.names(df_year_genre['1920'])
+
+df_temp_year_genre = data.frame(genre = row.names(df_year_genre['1920']), valeur = df_year_genre['1920'])
+#View(df_temp_year_genre)
+
+wordcloud(words = df_temp_year_genre$genre, freq = df_temp_year_genre$X1920, 
+               max.words=10, random.order=FALSE, 
+               colors=brewer.pal(8, "Dark2"), scale=c(3,3))
+
+
+colnames(df_temp_year_genre)[2] = '1920'
+
+#View(df_temp_year_genre)
+
+wordcloud_per_year = function(wanted_year) {
+  df_temp_year_genre = data.frame(genre = row.names(df_year_genre[wanted_year]), valeur= df_year_genre[wanted_year])
+  
+  colnames(df_temp_year_genre)[2] = 'freq'
+  
+  #View(df_temp_year_genre)
+ 
+  wordcloud(words = df_temp_year_genre$genre, freq = df_temp_year_genre$freq, 
+               max.words=10, random.order=FALSE, 
+               colors=brewer.pal(8, "Dark2"), scale=c(3,3))
+  
+}
+
+wordcloud_per_year('2000')
+
+```
+
+
 
 
 
