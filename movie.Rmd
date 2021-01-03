@@ -288,7 +288,7 @@ library(stringr)
 
 ```{r}
 #str_split(movies$title[1], pattern='(')
-top_view_4$release_year = str_extract(top_view_4$title, '(?<=\\()[0-9-]+(?=\\))')
+top_view_4$release_year = str_extract(top_view_4$title, '(?<=.\\()[0-9-]+(?=\\))')
 ```
 
 ```{r}
@@ -443,6 +443,31 @@ for(y in all_years){
   #ggsave(paste("tagPlot",y,".pdf",sep="_"))
 }
 ```
+##3.bis : distribution moyenne des avis autour de la sortie d'un film
+```{r}
+views <- top_view_4
+views$timestamp <-  as.POSIXct(views$timestamp, origin="1970-01-01")
+views$year=format(views$timestamp, "%Y")
+views = subset (views, select = c(movieId, year, release_year,freq))
+views$diff = as.integer(views$year) - as.integer(views$release_year)
+views = subset (views, select = c(movieId, diff, freq))
+views = aggregate(. ~movieId+diff, data=views, length)
+aux = subset(top_view_4, select = c(movieId,freq,userId))
+aux = aggregate(. ~movieId+freq,data=aux,length)
+views = merge(x=views,y=aux,by.x="movieId",by.y="movieId")
+views$proportion = 100*views$freq.x/views$freq.y
+res = subset(views, select = c(movieId,diff,proportion))
+res = aggregate(. ~diff, data=res,mean)
+res = subset(res, select = c(diff,proportion))
+res = arrange(res,diff)
+p = ggplot(data=res, aes(x=diff, y=proportion)) +
+  geom_area(stat="identity",color="blue")
+print(p)
+#views = subset (views, select = c(movieId, diff, freq.x, freq.y))
+#names(views)[names(views)=="movieId"] <- "nb"
+
+```
+
 ##6. Genre des films de la base par ordre décroissant
 
 ```{r}
