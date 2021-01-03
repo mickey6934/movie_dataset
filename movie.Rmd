@@ -24,12 +24,19 @@ library(plyr)
 ```
 # Variables
 ```{r}
+#suppress proxy prefix to use real dataset instead of truncated ones
+#ratings = read.csv('proxy_ratings.csv')
 ratings = read.csv('ratings.csv')
+
 movies = read.csv('movies.csv')
 links = read.csv('links.csv')
+#tags = read.csv('proxy_tags.csv')
 tags = read.csv('tags.csv')
-genome_scores = read.csv('genome-scores.csv')
+#genome_scores = read.csv('genome-scores.csv')
 genome_tags = read.csv('genome-tags.csv')
+
+limit = 10
+#limit = 1000
 ```
 
 ```{r}
@@ -92,14 +99,14 @@ View(top_view_1)
 ```{r}
 #View(top_view_1)
 
-length(top_view_1[top_view_1$freq > 1000,]$freq)/length(top_view_1$freq)
+length(top_view_1[top_view_1$freq > limit,]$freq)/length(top_view_1$freq)
 
-hist(top_view_1[top_view_1$freq > 1000,]$freq)
+hist(top_view_1[top_view_1$freq > limit,]$freq)
 ```
 ```{r}
 #boxplot(top_view_1[top_view_1$freq > 1000,]$freq)
 
-top_view_1 = top_view_1[top_view_1$freq > 1000,]
+top_view_1 = top_view_1[top_view_1$freq > limit,]
 View(top_view_1)
 ```
 
@@ -382,6 +389,30 @@ wordcloud(words = d$word, freq = d$freq, min.freq = 13815, max.words=200, random
 
 ```{r}
 #To be continued...
+#tags = read.csv('proxy_tags.csv')
+tags = read.csv('tags.csv')
+tags = merge(x = tags, y = genome_tags, by.x = "tag", by.y = "tag")
+tags = as.data.table(tags)
+tags$timestamp <-  as.POSIXct(tags$timestamp, origin="1970-01-01")
+tags$year=format(tags$timestamp, "%Y")
+tags = subset (tags, select = -c(userId, movieId))
+tags = aggregate(. ~year+tag+tagId, data=tags, length)
+names(tags)[names(tags)=="timestamp"] <- "nb"
+all_years = sort(unique(tags$year))
+selection = 10
+for(y in all_years){
+  sub = tags[tags$year==y,]
+  sub = arrange(sub, desc(nb))
+  sub = head(sub,selection)
+  ggplot(data=sub) +
+  geom_bar(mapping= aes(x=tag, y=nb), stat="identity") + coord_flip()
+  ggsave(paste("tagPlot",y,".pdf",sep="_"))
+}
+
+
+
+
+
 ```
 
 ##6. Genre des films de la base par ordre décroissant
