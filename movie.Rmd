@@ -385,10 +385,9 @@ View(tags_counter)
 wordcloud(words = d$word, freq = d$freq, min.freq = 13815, max.words=200, random.order=FALSE, colors=brewer.pal(8, "Dark2"))
 ```
 
-##5. Tags les plus populaires par annee 
+##5. Tags les plus utilisés par annee 
 
 ```{r}
-#To be continued...
 #tags = read.csv('proxy_tags.csv')
 tags = read.csv('tags.csv')
 tags = merge(x = tags, y = genome_tags, by.x = "tag", by.y = "tag")
@@ -399,13 +398,13 @@ tags = subset (tags, select = -c(userId, movieId))
 tags = aggregate(. ~year+tag+tagId, data=tags, length)
 names(tags)[names(tags)=="timestamp"] <- "nb"
 all_years = sort(unique(tags$year))
-selection = 10
+selection = 3
 for(y in all_years){
   sub = tags[tags$year==y,]
   sub = arrange(sub, desc(nb))
   sub = head(sub,selection)
   print(ggplot(data=sub) +
-  geom_bar(mapping= aes(x=tag, y=nb), stat="identity") + coord_flip())
+  geom_bar(mapping= aes(x=tag, y=nb, color=tag), stat="identity") + coord_flip())
   #ggsave(paste("tagPlot",y,".pdf",sep="_"))
 }
 
@@ -414,7 +413,36 @@ for(y in all_years){
 
 
 ```
+##5.bis tags les mieux notés par années
+```{r}
+tags = read.csv('tags.csv')
+tags = merge(x = tags, y = genome_tags, by.x = "tag", by.y = "tag")
+tags = as.data.table(tags)
+tags$timestamp <-  as.POSIXct(tags$timestamp, origin="1970-01-01")
+tags$year=format(tags$timestamp, "%Y")
 
+views = top_view_2
+views$timestamp <-  as.POSIXct(views$timestamp, origin="1970-01-01")
+views$year=format(views$timestamp, "%Y")
+views = subset (views, select = c(year, movieId, title, rating))
+views = aggregate(. ~year+movieId+title, data=views, mean)
+
+tags$join = paste(tags$year,tags$movieId,sep="!!")
+views$join = paste(views$year,views$movieId,sep="!!")
+tags = merge(x=tags,y=subset(views,select= -c(year,movieId)),by="join")
+tags = subset(tags,select= c(year,tag,tagId,rating))
+tags = aggregate(. ~year+tag+tagId, data=tags, mean)
+all_years = sort(unique(tags$year))
+selection = 3
+for(y in all_years){
+  sub = tags[tags$year==y,]
+  sub = arrange(sub, desc(rating))
+  sub = head(sub,selection)
+  print(ggplot(data=sub) +
+  geom_bar(mapping= aes(x=tag, y=rating, color=tag), stat="identity") + coord_flip())
+  #ggsave(paste("tagPlot",y,".pdf",sep="_"))
+}
+```
 ##6. Genre des films de la base par ordre décroissant
 
 ```{r}
