@@ -404,9 +404,9 @@ for(y in all_years){
   sub = tags[tags$year==y,]
   sub = arrange(sub, desc(nb))
   sub = head(sub,selection)
-  ggplot(data=sub) +
-  geom_bar(mapping= aes(x=tag, y=nb), stat="identity") + coord_flip()
-  ggsave(paste("tagPlot",y,".pdf",sep="_"))
+  print(ggplot(data=sub) +
+  geom_bar(mapping= aes(x=tag, y=nb), stat="identity") + coord_flip())
+  #ggsave(paste("tagPlot",y,".pdf",sep="_"))
 }
 
 
