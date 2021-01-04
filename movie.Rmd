@@ -407,11 +407,6 @@ for(y in all_years){
   geom_bar(mapping= aes(x=tag, y=nb, color=tag), stat="identity") + coord_flip())
   #ggsave(paste("tagPlot",y,".pdf",sep="_"))
 }
-
-
-
-
-
 ```
 ##5.bis tags les mieux notés par années
 ```{r}
