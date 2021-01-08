@@ -242,7 +242,7 @@ for(y in all_years[4:15]){
   do.call(grid.arrange,grid)
     
 ```
-##8.bis tags les mieux notés par années
+##8.Tags les mieux notés par années
 ```{r}
 tags = read.csv('tags.csv')
 tags = merge(x = tags, y = genome_tags, by.x = "tag", by.y = "tag")
