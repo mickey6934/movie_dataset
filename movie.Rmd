@@ -197,7 +197,7 @@ wordcloud(words = tags_relevance$tag, freq = tags_relevance$Mean_Count_by_tag, m
                colors=brewer.pal(9, "Dark2"), scale=c(2,2))
 
 ```
-##5. Tags les plus utilisés par annee 
+##7. Tags les plus utilisés par annee 
 
 ```{r}
 tags = read.csv('tags.csv')
@@ -242,7 +242,7 @@ for(y in all_years[4:15]){
   do.call(grid.arrange,grid)
     
 ```
-##5.bis tags les mieux notés par années
+##8.bis tags les mieux notés par années
 ```{r}
 tags = read.csv('tags.csv')
 tags = merge(x = tags, y = genome_tags, by.x = "tag", by.y = "tag")
@@ -291,7 +291,7 @@ for(y in all_years[10:15]){
   }
   do.call(grid.arrange,grid)
 ```
-##6. Genre des films notés de la base par ordre décroissant
+##9. Genre des films notés de la base par ordre décroissant
 
 ```{r}
 
@@ -331,14 +331,14 @@ counter_movies %>%
 
 
 ```
-##6. Worcloud du genre des films les plus notés
+##10. Worcloud du genre des films les plus notés
 
 ```{r}
 wordcloud(words = counter_movies$Genre, freq = counter_movies$Nombre, 
                max.words=10, random.order=FALSE, 
                colors=brewer.pal(8, "Dark2"), scale=c(3,3))
 ```
-##7. Genre des films de la base les plus courants par année et par ordre décroissant
+##11. Genre des films de la base les plus courants par année et par ordre décroissant
 
 ```{r}
 all_movies = top_view_4[, list(Count=.N), by=list(title, genres, release_year)]
