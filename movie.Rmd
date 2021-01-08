@@ -407,7 +407,7 @@ genre_per_year('Drama')
 
 #il faudrait plus une densité ici
 ```
-#8. Worcloud des genres par annee 
+#12. Worcloud des genres par annee 
 
 ```{r}
 
