@@ -13,11 +13,7 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
-x = 1
-```
-
+# Importation des librairies
 ```{r}
 library(magrittr)
 library(plyr)
@@ -26,17 +22,22 @@ library(ggplot2)
 library(data.table)
 library(forcats)
 library(wordcloud)
+library(forcats)
+library(ggplot2)
+library(wordcloud)
+library(wesanderson)
+library(stringr)
+library(gridExtra)
+library(ggplot2)
+library(ggstance)
+library(textreuse)
 ```
-# Variables
+# Importation de la dataset
+
 ```{r}
-#suppress proxy prefix to use real dataset instead of truncated ones
-#ratings = read.csv('proxy_ratings.csv')
-
 ratings = read.csv('ratings.csv')
-
 movies = read.csv('movies.csv')
 links = read.csv('links.csv')
-#tags = read.csv('proxy_tags.csv')
 tags = read.csv('tags.csv')
 genome_scores = read.csv('genome-scores.csv')
 genome_tags = read.csv('genome-tags.csv')
@@ -45,150 +46,30 @@ genome_tags = read.csv('genome-tags.csv')
 limit = 1000
 ```
 
-```{r}
-class(ratings)
-```
-
-## Top film
+# Les films les plus vus 
 
 ```{r}
-
-#View(movies)
-#View(ratings)
-
-#ratings <- as.data.frame(ratings)
-
-#View(ratings$timestamp)
-
-#View(as.POSIXct(ratings$timestamp, origin="1970-01-01"))
-
-#ratings$timestamp = as.POSIXct(ratings$timestamp, origin="1970-01-01")
-
-#?substr
-
-#ratings$timestamp = as.integer(substr(ratings$timestamp, 1, 4))
-
-#ratings = as.data.frame(ratings)
-
-#View(ratings)
-
-```
-
-
-```{r}
-
 #Meilleure ratings
-# nbview = aggregate(ratings, list(Movie=ratings.movieId), sum)
 (movie_views = count(ratings, vars = "movieId"))
-
-```
-
-```{r}
-#top_view = head(movie_views[order(movie_views$freq, decreasing = TRUE),], 100)
 top_view = merge(x = movies, y = movie_views, by.x = "movieId", by.y = "movieId")
-
 top_view_1 = as.data.frame(top_view)
-
-```
-
-```{r}
-#View(top_view_1)
-```
-
-```{r}
-#?sort
-
 top_view_1 = top_view_1[order(top_view_1$freq, decreasing = TRUE),]
-
-#View(top_view_1)
-```
-
-```{r}
-#View(top_view_1)
-
 length(top_view_1[top_view_1$freq > limit,]$freq)/length(top_view_1$freq)
-
 hist(top_view_1[top_view_1$freq > limit,]$freq)
-```
-
-```{r}
-#boxplot(top_view_1[top_view_1$freq > 1000,]$freq)
-
 top_view_1 = top_view_1[top_view_1$freq > limit,]
-#View(top_view_1)
-```
-
-
-```{r}
 top_view_2 = merge(x = top_view_1, y = ratings, by.x = "movieId", by.y = "movieId")
-
-#View(top_view_2)
 ```
 
-##DROP BELOW THE 1Q
-
-```{r}
-boxplot(top_view_2$rating[top_view_2$movieId == 1], col="blue",outline = FALSE)
-```
-
-```{r}
-
-summary(top_view_2$rating[top_view_2$movieId == 1])
-
-#summary(top_view_2$rating[top_view_2$movieId == 1])[2]
-```
-
-```{r}
-#top_view_2["summary"]=0
-#View(top_view_2)
-```
-
-
-```{r}
-summary(top_view_2$rating)
-```
-
-```{r}
-library(data.table)
-```
+# Remove below the lower_fence and above the upper_fence (lower whisker and upper whisker)
 
 ```{r}
 top_view_2 = as.data.table(top_view_2)
-```
-
-```{r}
-#View(top_view_2[, list('1Q' = summary(rating)[2]), by=list(movieId)])
-```
-
-```{r}
-top_view_agg = top_view_2[, list('1Q' = summary(rating)[2]), by=list(movieId)]
-```
-
-```{r}
-View(top_view_agg)
-```
-
-```{r}
 top_view_agg = top_view_2[, list('1Q'= summary(rating)[2], 
                        'lower_fence' = summary(rating)[2]-1.5*(summary(rating)[5] - summary(rating)[2]),
                        '3Q'= summary(rating)[5], 
                        'upper_fence' = summary(rating)[2]+1.5*(summary(rating)[5] - summary(rating)[2])),
                 by=list(movieId)]
-
-```
-
-```{r}
 top_view_3 = merge(x = top_view_2, y = top_view_agg, by.x = "movieId", by.y = "movieId")
-```
-
-```{r}
-View(top_view_3)
-
-#class(top_view_3)
-```
-#remove outliers (lower whisker and upper whisker)
-```{r}
-#top_view_4 = top_view_3[rating >= '1Q']
 
 #remove outliers 
 
@@ -198,40 +79,17 @@ top_view_4 = top_view_3[rating >= lower_fence & rating <= upper_fence]
 ##1. Distribution des avis pour les 10 films les plus notés
 
 ```{r}
-#1. Analyse de variables une par une 
-
-## outliers 
-
-##Liste de films 
-##
-## distribution des avis par film 
-##boxplot 
-
-##boxplot des 10 premiers films les plus vus
+#1. Boxplot des 10 premiers films les plus vus
 
 ten_most_ranked_movies = top_view_1$title[1:10]
-
-ten_most_ranked_movies[1:10]
-```
-
-```{r}
 d <- data.frame(word = sub("\\(.*", "", top_view_1$title[1:10]),freq=top_view_1$freq[1:10])
 
-d
-```
-
-```{r}
-library(forcats)
-library(ggplot2)
-```
-
-```{r}
 # Barplot basique
 
 d %>%
 mutate(word = fct_reorder(word, freq)) %>%
 ggplot(aes(x=word, y=freq, fill = word)) +
-  scale_fill_brewer(palette="Spectral") +
+  scale_fill_brewer(palette="Spectral", direction=-1) +
   geom_bar(stat="identity") + 
   coord_flip() + 
   ggtitle("Nombre de notes pour les dix films les plus notés") +
@@ -239,46 +97,21 @@ ggplot(aes(x=word, y=freq, fill = word)) +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme(legend.position = "none")
 
-
-#ggsave("barplot_10_films.png")
 ```
-
-```{r}
-library(wordcloud)
-```
+##2. Worcloud - Films les plus notés (page de garde)
 
 ```{r}
 d <- data.frame(word = sub("\\(.*", "", top_view_1$title[1:100]),freq=top_view_1$freq[1:100])
-d
-```
 
-```{r}
-# Installer
-#install.packages("wesanderson")
-# Charger
-library(wesanderson)
-```
-
-
-```{r}
 wordcloud(words = d$word, freq = d$freq, 
-               max.words=90, random.order=FALSE, 
-               colors=wes_palette("FantasticFox1"), family = "serif", scale=c(.5,.5))
+               max.words=50, random.order=FALSE, 
+               colors=brewer.pal(10, "Dark2"), family = "serif", scale=c(1,1))
 
 ```
 
+#3. Distribution des avis - 10 films les plus notés
 
 ```{r}
-for(i in seq(1, 5)) {
-  boxplot(top_view_4$rating[top_view_4$title == ten_most_ranked_movies[i]], col="black",outline = FALSE)
-}
-
-str_split(ten_most_ranked_movies[1], " ")[[1]][1]
-
-dev.off()
-
-par(mar=c(15,2,1,1))
-
 boxplot(top_view_4$rating[top_view_4$title == ten_most_ranked_movies[1]],
         top_view_4$rating[top_view_4$title == ten_most_ranked_movies[2]],
         top_view_4$rating[top_view_4$title == ten_most_ranked_movies[3]],
@@ -289,67 +122,19 @@ boxplot(top_view_4$rating[top_view_4$title == ten_most_ranked_movies[1]],
         top_view_4$rating[top_view_4$title == ten_most_ranked_movies[8]],
         top_view_4$rating[top_view_4$title == ten_most_ranked_movies[9]],
         top_view_4$rating[top_view_4$title == ten_most_ranked_movies[10]],
-        names = c(ten_most_ranked_movies[1],
-                  ten_most_ranked_movies[2],
-                  ten_most_ranked_movies[3],
-                  ten_most_ranked_movies[4],
-                  ten_most_ranked_movies[5],
-                  ten_most_ranked_movies[6],
-                  ten_most_ranked_movies[7],
-                  ten_most_ranked_movies[8],
-                  ten_most_ranked_movies[9],
-                  ten_most_ranked_movies[10]),
-        las = 2,
-        col=brewer.pal(10,"Dark2"),outline = FALSE, main="Distribution des 10 films les plus notés")
-
-
-#for(i in seq(1, 5)) {
-#  hist(top_view_4$rating[top_view_4$title == ten_most_ranked_movies[i]], col="black")
-#}
-
-#boxplot(top_view_4$rating[top_view_4$title == five_most_ranked_movies[1]], col="blue",outline = FALSE)
-
+        names = c(1:10),
+        las = 1,
+        col=brewer.pal(10, "Spectral"),outline = FALSE, main="Distribution des 10 films les plus notés")
 ```
 
-##2. Nombre d'avis par année
-
-
-```{r}
-#rm(list=c('top_view_2', 'top_view_3'))
-```
+##4. Nombre d'avis par année
 
 ```{r}
-
 top_view_4$timestamp <-  as.POSIXct(top_view_4$timestamp, origin="1970-01-01")
-
-```
-
-```{r}
-#class(top_view_4)
-#View(format(top_view_4$timestamp, "%Y"))
-
-#format(top_view_4$timestamp[1:4], "%Y")
-
 top_view_4$year=format(top_view_4$timestamp, "%Y")
-```
-
-```{r}
-View(top_view_4[1])
-```
-
-```{r}
 ranking_per_year = top_view_4[, list(Ranking_Total_Per_Year = .N), 
                               by=list(year)][order(-year)]
 
-#View(ranking_per_year)
-```
-
-```{r}
-library(ggplot2)
-```
-
-
-```{r}
 # Barplot basique
 
 ranking_per_year[ranking_per_year$year > 1995] %>%
@@ -360,59 +145,16 @@ ggplot(aes(x=year, y=Ranking_Total_Per_Year)) +
   ggtitle("Nombre de notes par année") +
   theme(plot.title = element_text(hjust = 0.5))
 
-
-#do the same with geom_area()
-
-#ranking_per_year$proportion = (ranking_per_year$Ranking_Total_Per_Year / #sum(ranking_per_year[ranking_per_year$year > 1995]$Ranking_Total_Per_Year))
-
-#ranking_per_year = arrange(ranking_per_year, year)
-
-#View(ranking_per_year)
-
-#ggplot(data=ranking_per_year, aes(x=year, y=proportion)) +
-#  geom_area(stat="identity",color="red", fill = "steelblue")
-
 ```
 
-##3. Nombre d'avis par année (par différence avec la sortie du film)
-
+##5. Distribution moyenne des avis autour de la sortie d'un film
 ```{r}
-library(stringr)
-```
 
-```{r}
-#str_split(movies$title[1], pattern='(')
 top_view_4$release_year = str_extract(top_view_4$title, '(?<=.\\()[0-9-]+(?=\\))')
-```
-
-```{r}
-
 top_view_release = top_view_4[, list(Diff_Release_Year = .N), 
                               by=list(as.numeric(format(timestamp, "%Y")) - as.numeric(str_extract(title, '(?<=.\\()[0-9-]+(?=\\))')))]
-
-```
-
-```{r}
-#View(top_view_release)
-```
-
-```{r}
 top_view_release = top_view_release[order(as.numeric)][1:101]
-```
 
-```{r}
-#View(top_view_release)
-```
-
-```{r}
-# Barplot basique
-p = ggplot(data=top_view_release, aes(x=as.numeric, y=Diff_Release_Year)) +
-  geom_bar(stat="identity")
-p
-```
-
-##3.bis : distribution moyenne des avis autour de la sortie d'un film
-```{r}
 views <- top_view_4
 views$timestamp <-  as.POSIXct(views$timestamp, origin="1970-01-01")
 views$year=format(views$timestamp, "%Y")
@@ -429,95 +171,49 @@ res = aggregate(. ~diff, data=res,mean)
 res = subset(res, select = c(diff,proportion))
 res = arrange(res,diff)
 
-#View(res)
-
-
 p = ggplot(data=res, aes(x=diff, y=proportion)) +
   geom_area(stat="identity",color="red", fill = "steelblue") +
-  ggtitle("Proportion d'avis par année (par différence avec la sortie du film) ") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) + 
+   ylab("Proportion du nombre total d'avis (%)") + xlab("Années après la sortie du film") 
   
 print(p)
-#views = subset (views, select = c(movieId, diff, freq.x, freq.y))
-#names(views)[names(views)=="movieId"] <- "nb"
-
 ```
-
-##4. Tags les plus populaires sur la dataset 
-
-```{r}
-#View(genome_tags)
-```
-
-```{r}
-#View(genome_scores)
-```
+##6. Tags les plus populaires sur la dataset 
 
 ```{r}
 genome_scores = as.data.table(genome_scores)
-```
-
-```{r}
 tags = merge(x = genome_tags, y = genome_scores, by.x = "tagId", by.y = "tagId", all.x = FALSE, all.y = FALSE)
-```
-
-```{r}
 tags = as.data.table(tags)
-```
-
-```{r}
-View(tags)
-```
-
-```{r}
 tags_relevance = tags[, list(Mean_Count_by_tag = mean(relevance)), 
                               by=tag]
-```
-
-```{r}
 tags_relevance = arrange(tags_relevance, Mean_Count_by_tag)
-```
-
-```{r}
-View(tags_relevance)
-```
-
-
-```{r}
-library(wordcloud)
-```
-
-```{r}
 d <- data.frame(word = tags_relevance$tag,freq=tags_relevance$Mean_Count_by_tag)
 
 head(d, 30)
-
-```
-
-```{r}
-
 tags_relevance[tags_relevance$tag == "hannibal lecter"]
 
 wordcloud(words = tags_relevance$tag, freq = tags_relevance$Mean_Count_by_tag, min.freq = 0.4, 
                max.words=30, random.order=FALSE, 
                colors=brewer.pal(9, "Dark2"), scale=c(2,2))
-```
 
+```
 ##5. Tags les plus utilisés par annee 
 
 ```{r}
-#tags = read.csv('proxy_tags.csv')
 tags = read.csv('tags.csv')
 tags = merge(x = tags, y = genome_tags, by.x = "tag", by.y = "tag")
 tags = as.data.table(tags)
 tags$timestamp <-  as.POSIXct(tags$timestamp, origin="1970-01-01")
 tags$year=format(tags$timestamp, "%Y")
-tags = subset (tags, select = -c(userId, movieId))
+#tags = subset (tags, select = -c(userId, movieId))
+tags = subset (tags, select = -movieId)
 tags = aggregate(. ~year+tag+tagId, data=tags, length)
 names(tags)[names(tags)=="timestamp"] <- "nb"
+
 all_years = sort(unique(tags$year))
 selection = 3
-for(y in all_years){
+
+for(y in all_years[all_years != "2005"]){
   sub = tags[tags$year==y,]
   sub = arrange(sub, desc(nb))
   sub = head(sub,selection)
@@ -525,8 +221,26 @@ for(y in all_years){
   geom_bar(mapping= aes(x=tag, y=nb, color=tag), stat="identity") + coord_flip())
   #ggsave(paste("tagPlot",y,".pdf",sep="_"))
 }
+  
+grid = list()
+i = 1
 
-#il faudrait une couleur unique par tag 
+for(y in all_years[4:15]){
+  sub = tags[tags$year==y,]
+  sub = arrange(sub, desc(nb))
+  sub = head(sub,selection)
+  sub$tag = str_wrap(sub$tag, width = 10)
+  p = ggplot(data=sub) + geom_bar(mapping=aes(x=reorder(tag, nb), y=nb, 
+                                        fill=reorder(tag,nb)), stat="identity", 
+                                      show.legend = FALSE, width = 0.7, position = position_dodge(width = 10)) +
+      theme(axis.text.x=element_text(size=8), axis.text.y=element_text(size=8),
+                                                                                                  axis.title=element_text(size=12,face="bold")) + ggtitle(y)+ xlab("tag") + ylab("n") + theme(plot.title = element_text(hjust = 0.5))
+      
+  grid[[i]]= p
+  i = i + 1
+    }
+  do.call(grid.arrange,grid)
+    
 ```
 ##5.bis tags les mieux notés par années
 ```{r}
@@ -549,70 +263,59 @@ tags = subset(tags,select= c(year,tag,tagId,rating))
 tags = aggregate(. ~year+tag+tagId, data=tags, mean)
 all_years = sort(unique(tags$year))
 selection = 3
+
 for(y in all_years){
   sub = tags[tags$year==y,]
   sub = arrange(sub, desc(rating))
   sub = head(sub,selection)
   print(ggplot(data=sub) +
   geom_bar(mapping= aes(x=tag, y=rating, color=tag), stat="identity") + coord_flip())
-  #ggsave(paste("tagPlot",y,".pdf",sep="_"))
+  ggsave(paste("tagPlot",y,".pdf",sep="_"))
 }
-```
 
-##6. Genre des films de la base par ordre décroissant
+grid = list()
+i = 1
+for(y in all_years[10:15]){
+  sub = tags[tags$year==y,]
+  sub = arrange(sub, desc(rating))
+  sub = head(sub,selection)
+  sub$tag = str_wrap(sub$tag, width = 10)
+  p = ggplot(data=sub) + geom_bar(mapping=aes(x=reorder(tag, rating), y=rating, 
+                                        fill=reorder(tag,rating)), stat="identity", 
+                                      show.legend = FALSE, width = 0.7, position = position_dodge(width = 10)) +
+      theme(axis.text.x=element_text(size=8), axis.text.y=element_text(size=8),
+                                                                                                  axis.title=element_text(size=12,face="bold")) + ggtitle(y)+ xlab("tag") + ylab("n") + theme(plot.title = element_text(hjust = 0.5))
+  
+  grid[[i]]= p
+  i = i + 1
+  }
+  do.call(grid.arrange,grid)
+```
+##6. Genre des films notés de la base par ordre décroissant
 
 ```{r}
-#To be continued...
-
-#View(top_view_4)
-
-#View(top_view_4[, list(Count=.N), by=list(title, genres)])
-
-#top_view_4$genres[1]
-
-#(str_extract_all(top_view_4$genres[1], "Animation"))
-
-
-#grepl('Animation', top_view_4$genres[1], fixed = TRUE)
 
 temp = top_view_4[, list(Count=.N), by=list(genres)]$genres
-View(temp)
-
-class(temp)
 
 temp2 = lapply(temp, function(x) str_split(x, pattern='\\|'))
 
 all_genres = unique(unlist(temp2))
 
-#all_genres
-
 all_movies = top_view_4[, list(Count=.N), by=list(title, genres)]
-
-#View(all_movies)
 
 counter_movies = data.frame(Genre="1",
                  Nombre=1)
-#View(counter_movies)
 
 for (i in seq(all_genres)) {
-  #print(all_genres[i])
-  #print(paste(all_genres[i], ':', count(grepl(all_genres[i], all_movies$genres, fixed = TRUE))[2, 2]))
   
-  #print(all_genres[i])
   df_aux = c(all_genres[i], count(grepl(all_genres[i], all_movies$genres, fixed = TRUE))[2, 2])
   counter_movies = rbind(counter_movies, df_aux)
+  
 }
-
-#View(counter_movies)
 
 counter_movies = counter_movies[-1,]
 
-
-
 counter_movies$Nombre = as.numeric(counter_movies$Nombre)
-
-
-length(all_genres)
 
 my_colors <- colorRampPalette(brewer.pal(8, "Set2"))(length(all_genres))
 
@@ -628,64 +331,24 @@ counter_movies %>%
 
 
 ```
+##6. Worcloud du genre des films les plus notés
 
 ```{r}
-#View(counter_movies)
-
 wordcloud(words = counter_movies$Genre, freq = counter_movies$Nombre, 
                max.words=10, random.order=FALSE, 
                colors=brewer.pal(8, "Dark2"), scale=c(3,3))
-
 ```
 ##7. Genre des films de la base les plus courants par année et par ordre décroissant
 
 ```{r}
-#To be continued...
-
-#View(top_view_4)
-
-#View(top_view_4[, list(Count=.N), by=list(title, genres)])
-
-#top_view_4$genres[1]
-
-#(str_extract_all(top_view_4$genres[1], "Animation"))
-
-
-#grepl('Animation', top_view_4$genres[1], fixed = TRUE)
-#temp = top_view_4[, list(Count=.N), by=list(genres)]$genres
-#View(temp)
-#class(temp)
-#temp2 = lapply(temp, function(x) str_split(x, pattern='\\|'))
-#all_genres = unique(unlist(temp2))
-#all_genres
-
 all_movies = top_view_4[, list(Count=.N), by=list(title, genres, release_year)]
-
-#View(all_movies)
-
-#View(all_movies[, list(.N), by=release_year][order(release_year)])
 
 counter_movies = data.frame(Genre="",
                  Nombre=1, Year=1)
-#View(counter_movies)
-
-dim(all_movies)[1]
-
-length(all_genres)
 
 df = data.frame(matrix(0L, ncol = length(all_genres), nrow = length(seq(1920, 2020))))
-
 names(df) = all_genres
-
-#View(df)
-
-#seq(1920,2020)
-
 rownames(df) = seq(1920,2020)
-
-#View(df)
-
-df[1920, 'Adventure']
 
 for (i in seq(all_genres)) {
   
@@ -698,31 +361,11 @@ for (i in seq(all_genres)) {
   }
 }
 
-##df -  Genre des films de la base les plus courants par année et par ordre décroissant
-
-#View(df)
-```
-
-```{r}
-
-#View(movies)
-
 df_year = data.frame(matrix(0L, ncol = length(seq(1,2)), nrow = length(seq(1920, 2019))))
 
 names(df_year) = c("genre_le_plus_courant_par_annee", "combien")
 
-#View(df_year)
-
-dim(df)[2]
-
-#View(df)
-
-colnames(df)
-
 rownames(df_year) =seq(1920,2019)
-
-#df_year['1920', 'genre_le_plus_courant_par_annee']
-
 
 for (i in rownames(df_year)) {
   
@@ -743,21 +386,14 @@ for (i in rownames(df_year)) {
   
 }
 
-#View(df_year)
-
 df_plot = df_year[1:30,]
 
 ggplot(df_plot, aes(x= rownames(df_plot), y= combien, colour=genre_le_plus_courant_par_annee, label=genre_le_plus_courant_par_annee))+
-  geom_point() +geom_text(aes(label=genre_le_plus_courant_par_annee),hjust=0, vjust=0) 
-
+  geom_point() +geom_text(aes(label=genre_le_plus_courant_par_annee),hjust=0, vjust=0) + coord_flip()
 
 ```
 
 ```{r}
-View(df)
-
-df['Adventure']
-
 genre_per_year = function(genre) {
   
   df[genre] %>%
@@ -771,17 +407,13 @@ genre_per_year('Drama')
 
 #il faudrait plus une densité ici
 ```
-Worcloud des genres par annee 
+#8. Worcloud des genres par annee 
 
 ```{r}
-
-#View(t(df))
 
 df_year_genre = t(df)
 
 df_year_genre = as.data.frame(df_year_genre)
-
-#View(df_year_genre)
 
 row.names(df_year_genre)
 
@@ -790,7 +422,6 @@ class(df_year_genre['1920'])
 row.names(df_year_genre['1920'])
 
 df_temp_year_genre = data.frame(genre = row.names(df_year_genre['1920']), valeur = df_year_genre['1920'])
-#View(df_temp_year_genre)
 
 wordcloud(words = df_temp_year_genre$genre, freq = df_temp_year_genre$X1920, 
                max.words=10, random.order=FALSE, 
@@ -799,115 +430,18 @@ wordcloud(words = df_temp_year_genre$genre, freq = df_temp_year_genre$X1920,
 
 colnames(df_temp_year_genre)[2] = '1920'
 
-#View(df_temp_year_genre)
-
 wordcloud_per_year = function(wanted_year) {
   df_temp_year_genre = data.frame(genre = row.names(df_year_genre[wanted_year]), valeur= df_year_genre[wanted_year])
   
   colnames(df_temp_year_genre)[2] = 'freq'
-  
-  #View(df_temp_year_genre)
  
-  wordcloud(words = df_temp_year_genre$genre, freq = df_temp_year_genre$freq, 
+  return(wordcloud(words = df_temp_year_genre$genre, freq = df_temp_year_genre$freq, 
                max.words=10, random.order=FALSE, 
-               colors=brewer.pal(8, "Dark2"), scale=c(3,3))
+               colors=brewer.pal(8, "Dark2"), scale=c(1,1),
+               main=wanted_year))
   
 }
 
-wordcloud_per_year('2000')
-
+wordcloud_per_year('1998') 
 ```
 
-
-```{r}
-
-#TO BE DONE.....
-
-
-#RATING BASED ON YEAR
-
-#https://www.kaggle.com/ajithpanner/simple-imdb-data-analysis
-```
-
-```{r}
-
-#TO BE DONE.....
-
-
-#CONNECTED GENRE 
-
-#https://www.kaggle.com/diegoinacio/imdb-genre-based-analysis
-
-```
-
-
-
-
-##5 Repartition par userID: quel user a le plus noté ? 
-
-```{r}
-top_users = top_view_4[, list(Ranking_User = .N), 
-                              by=list(userId)][order(-Ranking_User)]
-```
-
-```{r}
-View(top_users[1:100])
-```
-
-```{r}
-top_users[1:100] %>%
-  mutate(userId = fct_reorder(factor(userId), desc(Ranking_User))) %>%
-  ggplot(aes(x=userId, y=Ranking_User)) +
-  geom_bar(stat="identity")
-  
-#barplot(top_users[1:100]$Ranking_User ~ top_users[1:100]$userId)
-```
-
-
-
-
-
-
-
-
-
-```{r}
-
-
-
-avg_ratings = ddply(ratings, .(movieId), summarize, Avg=mean(rating))
-top_populaire = head(avg_ratings[order(avg_ratings$Avg, decreasing = TRUE),], 100)
-movie_top = merge(x = movies, y = top_populaire, by.x = "movieId", by.y = "movieId")
-View(movie_top)
-
-#Merge
-#all_data c'est toutes les données pour les films
-all_data = merge(x =ratings, y = movies, by.x = "movieId", by.y = "movieId")
-all_data = merge(x = all_data, y = links, by.x = "movieId", by.y = "movieId")
-all_data = merge(x = all_data, y = tags, by.x = "movieId", by.y = "movieId")
-all_data = merge(x = all_data, y = genome_scores, by.x = "movieId", by.y = "movieId")
-
-
-
-
-```
-
-
-
-
-
-
-
-
-
-
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
